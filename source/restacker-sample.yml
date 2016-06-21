@@ -1,0 +1,13 @@
+---
+:myapp:
+  :region: us-west-2
+  :master:
+    :label: control
+    :account_number: '100352119871'
+    :role_name: CTL-my-app-DeploymentAdmin
+    :role_prefix: "/dso/ctrl/my-app/"
+  :target:
+    :label: target
+    :account_number: '717986480831'
+    :role_name: TGT-dso-DeploymentAdmin
+    :role_prefix: "/human/dso/"
