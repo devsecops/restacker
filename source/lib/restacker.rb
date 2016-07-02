@@ -278,6 +278,7 @@ class Restacker < BaseStacker
       params = {}
       template["Parameters"].each do |key, value|
         params[key] = value['Default']
+        puts "WARNING: No default parameter set for #{key}" if value['Default'] == nil
       end
       puts params.to_yaml
     rescue JSON::ParserError => e
