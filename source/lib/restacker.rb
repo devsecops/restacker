@@ -272,6 +272,10 @@ class Restacker < BaseStacker
     create_stack(template, name, get_merged_params(template_param_keys))
   end
 
+  def configure()
+    
+  end
+
   def self.dump_stack_params(options)
     begin
       template = JSON.parse(File.open(options[:template]).read)
