@@ -159,6 +159,9 @@ begin
       else
         usage "Please specify a stack name (-n) to remove"
       end
+    when 'configure'
+      puts "Configuring target account"
+      restacker.configure
     when 'dump'
       if options[:template]
         # puts "Dumping stack parameters"
@@ -166,8 +169,6 @@ begin
       else
         usage "Please specify a stack template (-t) or module (-m)"
       end
-    when 'configure'
-      restacker.configure
     when 'console'
       AwsCli.new(options).console(options)
     when 'aws'
