@@ -276,13 +276,15 @@ class Restacker < BaseStacker
     config = YAML.load CONFIG_FILE
     target = config.dig(config.keys[0], :target)
 
+    new_account_number = ""
+
+    old_account_number = target[:account_number].to_s
+    old_account_number[0...7] = "********"
+
     print "Label [\"#{target[:label]}\"]: "
-    target[:label] = gets.chomp()
+    target[:label] = gets.chomp
 
     loop do
-      old_account_number = target[:account_number].to_s
-      old_account_number[0...7] = '********'
-
       print "Account Number [#{old_account_number}]: "
 
       new_account_number = gets.chomp
