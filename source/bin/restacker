@@ -123,7 +123,8 @@ begin
       puts "Location not specified, plane is set to default: [#{DEFAULT_PLANE}]"
     end
     puts "Configuring target plane [#{plane}]: "
-    RestackerConfig.rc_configure(plane.to_sym)
+
+    Restacker.configure(plane.to_sym)
     exit(0)
   end
 

@@ -272,38 +272,6 @@ class Restacker < BaseStacker
     create_stack(template, name, get_merged_params(template_param_keys))
   end
 
-  def configure()
-    config = YAML.load CONFIG_FILE
-    target = config.dig(config.keys[0], :target)
-
-    new_account_number = ""
-
-    old_account_number = target[:account_number].to_s
-    old_account_number[0...7] = "********"
-
-    print "Label [\"#{target[:label]}\"]: "
-    target[:label] = gets.chomp
-
-    loop do
-      print "Account Number [#{old_account_number}]: "
-
-      new_account_number = gets.chomp
-      break if new_account_number =~ /\d/
-    end
-
-    target[:account_number] = new_account_number
-
-    print "Role Name [#{target[:role_name]}]: "
-    target[:role_name] = gets.chomp
-
-    print "Role Prefix [#{target[:role_prefix]}]: "
-    target[:role_prefix] = gets.chomp
-
-    File.open(CONFIG_FILE, 'w') do |h|
-      h.write configuration_file.to_yaml
-    end
-  end
-
   def self.dump_stack_params(options)
     begin
       template = JSON.parse(File.open(options[:template]).read)
@@ -319,6 +287,44 @@ class Restacker < BaseStacker
       else
         $stderr.puts e.message.each_line.first
       end
+    end
+  end
+
+  def self.configure(location)
+    puts "config file location: #{CONFIG_FILE}"
+    config = YAML.load_file(CONFIG_FILE)
+    if !config
+      puts "Make sure your ~/.restacker/restacker.yml file is configured. \n
+          See source/restacker-sample.yml for example."
+      exit(1)
+    end
+    target = config.dig(location, :target)
+
+    new_account_number = ""
+
+    old_account_number = target[:account_number].to_s
+    old_account_number[0...7] = "********"
+
+    print "Label [\"#{target[:label]}\"]: "
+    target[:label] = gets.chomp
+
+    loop do
+      print "Account Number [#{old_account_number}]: "
+
+      new_account_number = gets(12).chomp
+      break if (new_account_number =~ /\d/ || new_account_number.empty?)
+    end
+    if !new_account_number.empty?
+      target[:account_number] = new_account_number
+    end
+    print "Role Name [#{target[:role_name]}]: "
+    target[:role_name] = gets.chomp
+
+    print "Role Prefix [#{target[:role_prefix]}]: "
+    target[:role_prefix] = gets.chomp
+
+    File.open(CONFIG_FILE, 'w') do |f|
+      f.write config.to_yaml
     end
   end
 end

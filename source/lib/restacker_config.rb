@@ -1,5 +1,3 @@
-
-
 class RestackerConfig
   def self.load_config(plane)
     begin
@@ -22,5 +20,4 @@ class RestackerConfig
     end
     config[plane]
   end
-
 end
