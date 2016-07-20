@@ -320,8 +320,12 @@ class Restacker < BaseStacker
       new_role_name = gets.chomp
       break if (new_role_name =~ /[\w&&\S\-]/ || new_role_name.empty?)
     end
-    print "Role Prefix [#{target[:role_prefix]}]: "
-    new_role_prefix = gets.chomp
+
+    loop do
+      print "Role Prefix [#{target[:role_prefix]}]: "
+      new_role_prefix = gets.chomp
+      break if (new_role_prefix =~ /[\w&&\S\-\/]/ || new_role_prefix.empty?)
+    end
 
     target[:label] = new_label.empty? ? target[:label] : new_label
     target[:account_number] = new_account_number.empty? ? target[:account_number] : new_account_number
