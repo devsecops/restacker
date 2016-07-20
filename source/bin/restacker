@@ -160,7 +160,14 @@ begin
         usage "Please specify a stack name (-n) to remove"
       end
     when 'configure'
-      puts "Configuring target account"
+      plane = ""
+      if !options[:location]
+        puts "Location not specified, default plane #{DEFAULT_PLANE} used."
+        plane = DEFAULT_PLANE
+      else
+        plane = options[:location]
+      end
+      puts "Configuring target account for plane [#{plane}]:\n"
       restacker.configure
     when 'dump'
       if options[:template]
