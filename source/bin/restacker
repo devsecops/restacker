@@ -117,6 +117,16 @@ begin
   puts(VERSION) || exit(0) if options[:version]
   usage("Please specify an ACTION") && exit(0) if action.nil?
 
+  if action == 'configure'
+    plane = options[:location] ? options[:location] : DEFAULT_PLANE
+    if !plane
+      puts "Location not specified, plane is set to default: [#{DEFAULT_PLANE}]"
+    end
+    puts "Configuring target plane [#{plane}]: "
+    RestackerConfig.rc_configure(plane.to_sym)
+    exit(0)
+  end
+
   if ACTIONS.keys.push(:aws).include?(action.to_sym)
     restacker = Restacker.new(options.to_h) unless ['dump'].include?(action)
     case action
@@ -159,16 +169,16 @@ begin
       else
         usage "Please specify a stack name (-n) to remove"
       end
-    when 'configure'
-      plane = ""
-      if !options[:location]
-        puts "Location not specified, default plane #{DEFAULT_PLANE} used."
-        plane = DEFAULT_PLANE
-      else
-        plane = options[:location]
-      end
-      puts "Configuring target account for plane [#{plane}]:\n"
-      restacker.configure
+    # when 'configure'
+    #   plane = ""
+    #   if !options[:location]
+    #     puts "Location not specified, default plane #{DEFAULT_PLANE} used."
+    #     plane = DEFAULT_PLANE
+    #   else
+    #     plane = options[:location]
+    #   end
+    #   puts "Configuring target account for plane [#{plane}]:\n"
+    #   RestackerConfig.rc_configure(options[:location])
     when 'dump'
       if options[:template]
         # puts "Dumping stack parameters"
