@@ -323,10 +323,10 @@ class Restacker < BaseStacker
     print "Role Prefix [#{target[:role_prefix]}]: "
     new_role_prefix = gets.chomp
 
-    target[:label] = new_label ? new_label : target[:label]
-    target[:account_number] = new_account_number ? new_account_number : target[:account_number]
-    target[:role_name] = new_role_name ? new_role_name : target[:role_name]
-    target[:role_prefix] = new_role_prefix ? new_role_prefix : target[:role_prefix]
+    target[:label] = new_label.empty? ? target[:label] : new_label
+    target[:account_number] = new_account_number.empty? ? target[:account_number] : new_account_number
+    target[:role_name] = new_role_name.empty? ? target[:role_name] : new_role_name
+    target[:role_prefix] = new_role_prefix.empty? ? target[:role_prefix] : new_role_prefix
 
     File.open(CONFIG_FILE, 'w') do |f|
       f.write config.to_yaml
