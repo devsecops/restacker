@@ -300,7 +300,7 @@ class Restacker < BaseStacker
     end
     target = config.dig(location, :target)
 
-    new_account_number = ""
+    new_account_number, new_role_name, new_role_prefix = ""
 
     old_account_number = target[:account_number].to_s
     old_account_number[0...7] = "********"
@@ -315,11 +315,11 @@ class Restacker < BaseStacker
       break if (new_account_number =~ /\d/ || new_account_number.empty?)
     end
 
-    # loop do
+    loop do
       print "Role Name [#{target[:role_name]}]: "
       new_role_name = gets.chomp
-      # break if (new_role_name =~ /[\w\-]/ || new_role_name.empty?)
-    # end
+      break if (new_role_name =~ /[\w&&\S\-]/ || new_role_name.empty?)
+    end
     print "Role Prefix [#{target[:role_prefix]}]: "
     new_role_prefix = gets.chomp
 
