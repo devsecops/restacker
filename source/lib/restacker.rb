@@ -273,7 +273,33 @@ class Restacker < BaseStacker
   end
 
   def configure()
-    
+    config = YAML.load CONFIG_FILE
+    target = config.dig(config.keys[0], :target)
+
+    print "Label [#{target[:label]}]:"
+    target[:label] = gets.chomp()
+
+    loop do
+      old_account_number = target[:account_number].to_s
+      old_account_number[0...7] = '********'
+
+      print "Account Number [#{old_account_number}]: "
+
+      new_account_number = gets.chomp
+      break if new_account_number =~ /\d/
+    end
+
+    target[:account_number] = new_account_number
+
+    print "Role Name [#{target[:role_name]}]"
+    target[:role_name] = gets.chomp
+
+    print "Role Prefix [#{target[:role_prefix]}]"
+    target[:role_prefix] = gets.chomp
+
+    File.open(CONFIG_FILE, 'w') do |h|
+      h.write config.to_yaml
+    end
   end
 
   def self.dump_stack_params(options)
