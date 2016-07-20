@@ -306,7 +306,7 @@ class Restacker < BaseStacker
     old_account_number[0...7] = "********"
 
     print "Label [\"#{target[:label]}\"]: "
-    target[:label] = gets.chomp
+    new_label = gets.chomp
 
     loop do
       print "Account Number [#{old_account_number}]: "
@@ -314,14 +314,19 @@ class Restacker < BaseStacker
       new_account_number = gets(12).chomp
       break if (new_account_number =~ /\d/ || new_account_number.empty?)
     end
-    if !new_account_number.empty?
-      target[:account_number] = new_account_number
-    end
-    print "Role Name [#{target[:role_name]}]: "
-    target[:role_name] = gets.chomp
 
+    # loop do
+      print "Role Name [#{target[:role_name]}]: "
+      new_role_name = gets.chomp
+      # break if (new_role_name =~ /[\w\-]/ || new_role_name.empty?)
+    # end
     print "Role Prefix [#{target[:role_prefix]}]: "
-    target[:role_prefix] = gets.chomp
+    new_role_prefix = gets.chomp
+
+    target[:label] = new_label ? new_label : target[:label]
+    target[:account_number] = new_account_number ? new_account_number : target[:account_number]
+    target[:role_name] = new_role_name ? new_role_name : target[:role_name]
+    target[:role_prefix] = new_role_prefix ? new_role_prefix : target[:role_prefix]
 
     File.open(CONFIG_FILE, 'w') do |f|
       f.write config.to_yaml
