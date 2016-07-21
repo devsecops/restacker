@@ -298,7 +298,7 @@ class Restacker < BaseStacker
           See source/restacker-sample.yml for example."
       exit(1)
     end
-    target = config.dig(location, :target)
+    target = config.fetch(location, {}).fetch(:target)
 
     new_account_number, new_role_name, new_role_prefix = ""
 
