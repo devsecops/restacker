@@ -303,7 +303,7 @@ class Restacker < BaseStacker
     new_account_number, new_role_name, new_role_prefix = ""
 
     old_account_number = target[:account_number].to_s
-    old_account_number[0...7] = "********"
+    # old_account_number[0...7] = "********"
 
     print "Label [\"#{target[:label]}\"]: "
     new_label = gets.chomp
