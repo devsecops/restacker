@@ -311,8 +311,8 @@ class Restacker < BaseStacker
     loop do
       print "Account Number [#{old_account_number}]: "
 
-      new_account_number = gets(12).chomp
-      break if (new_account_number =~ /\d/ || new_account_number.empty?)
+      new_account_number = gets.chomp
+      break if (new_account_number =~ /\d{12,}/ || new_account_number.empty?)
     end
 
     loop do
