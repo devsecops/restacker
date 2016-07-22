@@ -290,4 +290,51 @@ class Restacker < BaseStacker
       end
     end
   end
+
+  def self.configure(location)
+    puts "config file location: #{CONFIG_FILE}"
+    config = YAML.load_file(CONFIG_FILE)
+    if !config
+      puts "Make sure your ~/.restacker/restacker.yml file is configured. \n
+          See source/restacker-sample.yml for example."
+      exit(1)
+    end
+    target = config.fetch(location, {}).fetch(:target)
+
+    new_account_number, new_role_name, new_role_prefix = ""
+
+    old_account_number = target[:account_number].to_s
+    # old_account_number[0...7] = "********"
+
+    print "Label [\"#{target[:label]}\"]: "
+    new_label = gets.chomp
+
+    loop do
+      print "Account Number [#{old_account_number}]: "
+
+      new_account_number = gets.chomp
+      break if (new_account_number =~ /\d{12,}/ || new_account_number.empty?)
+    end
+
+    loop do
+      print "Role Name [#{target[:role_name]}]: "
+      new_role_name = gets.chomp
+      break if (new_role_name =~ /[\w&&\S\-]/ || new_role_name.empty?)
+    end
+
+    loop do
+      print "Role Prefix [#{target[:role_prefix]}]: "
+      new_role_prefix = gets.chomp
+      break if (new_role_prefix =~ /[\w&&\S\-\/]/ || new_role_prefix.empty?)
+    end
+
+    target[:label] = new_label.empty? ? target[:label] : new_label
+    target[:account_number] = new_account_number.empty? ? target[:account_number] : new_account_number
+    target[:role_name] = new_role_name.empty? ? target[:role_name] : new_role_name
+    target[:role_prefix] = new_role_prefix.empty? ? target[:role_prefix] : new_role_prefix
+
+    File.open(CONFIG_FILE, 'w') do |f|
+      f.write config.to_yaml
+    end
+  end
 end
