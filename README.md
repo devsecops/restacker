@@ -30,6 +30,7 @@ ACTIONS
     deploy	Deploys a new stack
     migrate	Migrates from green to blue stack
     remove	Removes the given deployment
+    configure	Configure the target account in the restacker.yml file
     dump	Dumps the default configuration for a given template or module
     console	Opens the AWS Console
 
