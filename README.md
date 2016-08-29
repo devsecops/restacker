@@ -1,22 +1,21 @@
-Restacker
-=======
-Restacker is the DevSecOps deployment swiss army knife. You can use it do deploy,
-migrate and/or remove stacks. Although not feature complete yet, you can begin
-using it to deploy or restack your existing apps.
+# Restacker
 
-Install it:
---------------
-````
+Restacker is the DevSecOps deployment swiss army knife. You can use it do deploy, update, migrate, and/or remove stacks.  
+Although not feature complete yet, you can begin using it to deploy or re-stack your existing apps.
+
+## Install it:
+
+```
 git clone https://github.com/devsecops/restacker.git
 cd restacker/source
 gem build restacker.gemspec
 gem install restacker
 # if you're using rbenv, then: rbenv rehash
-````
+```
 
-Use it:
---------------
-````
+## Use it:
+
+```
 $ restacker
 Please specify an ACTION
 
@@ -60,15 +59,12 @@ Notes:
  - If no template file path is provided when restacking restacker will use the same
    template as if currently deployed.
  - Deployed stack name will be in the form of NAME-DATE using today's date
- ````
+ ```
 
-Configuration
---------------
-To configure another target account
-just add a section to ~/.restacker/restacker.yml listing the master & target
-account properties.  
-The below configuration is an example of MyApp1 and MyApp2 as
-target accounts and CTRL as master.
+## Configuration
+
+To configure another target account, just add a section to ~/.restacker/restacker.yml listing the master & target account properties.  
+The below configuration is an example of MyApp1 and MyApp2 as target accounts and CTRL as master.
 
 ```
 $ cat ~/.restacker/restacker.yml
