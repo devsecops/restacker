@@ -10,8 +10,8 @@ Install it:
 git clone https://github.com/devsecops/restacker.git
 cd restacker/source
 gem build restacker.gemspec
-gem install restacker-0.0.11.gem
-rbenv init -
+gem install restacker
+# if you're using rbenv, then: rbenv rehash
 ````
 
 Use it:
