@@ -8,11 +8,12 @@ Gem::Specification.new do |s|
   s.bindir  = 'bin'
   s.executables << 'restacker'
   s.description = 'Restacker is a DevSecOps tool to help keep your Cloud deployment fresh and secure. There are many like it (maybe) but this one is mine.'
-  s.authors = ['Javier Godinez']
+  s.authors = ['Javier Godinez', 'Peter Benjamin']
   s.email   = 'godinezj@gmail.com'
   s.files   = `git ls-files -z`.split("\x0")
   s.require_paths = ["lib"]
   s.add_runtime_dependency 'aws-sdk', '~> 2'
+  s.add_runtime_dependency 'rainbow'
   s.homepage = 'https://github.com/devsecops/restacker'
   s.license = 'Apache License Version 2.0'
 end
