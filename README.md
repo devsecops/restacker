@@ -64,25 +64,48 @@ Notes:
 
 Configuration
 --------------
-Restacker is out of the box configured to use KCP as the master account and KSP
-as the target account (deployment account). To configure another target account
+To configure another target account
 just add a section to ~/.restacker/restacker.yml listing the master & target
-account properties. The below configuration is an example of KSP and KVP as
-target accounts and KCP as master.
+account properties.  
+The below configuration is an example of MyApp1 and MyApp2 as
+target accounts and CTRL as master.
 
-````
+```
 $ cat ~/.restacker/restacker.yml
----
-:myapp:
+
+:master: &master_default
+  :label: control
+  :account_number: '123456789012'
+  :role_name: ctrl-ctrl-DeployAdmin
+  :role_prefix: "/dso/ctrl/master/"
+
+:ctrl:
   :region: us-west-2
   :master:
-    :label: control
-    :account_number: '123456789012'
-    :role_name: CTL-my-app-DeploymentAdmin
-    :role_prefix: "/dso/ctrl/my-app/"
+    <<: *master_default
   :target:
-    :label: target
+    <<: *master_default
+
+:myapp1:
+  :region: us-west-2
+  :master:
+    <<: *master_default
+    :role_name: ctrl-myapp1-DeployAdmin
+  :target:
+    :label: myapp1
     :account_number: '098765432123'
-    :role_name: TGT-dso-DeploymentAdmin
-    :role_prefix: "/human/dso/"
-````
+    :role_name: myapp1-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
+:myapp2:
+  :region: us-west-2
+  :master:
+    <<: *master_default
+    :role_name: ctrl-myapp2-DeployAdmin
+  :target:
+    :label: myapp2
+    :account_number: '123098456765'
+    :role_name: myapp2-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
+```
