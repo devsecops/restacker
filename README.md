@@ -74,7 +74,7 @@ target accounts and CTRL as master.
 $ cat ~/.restacker/restacker.yml
 
 :master: &master_default
-  :label: control
+  :label: ctrl
   :account_number: '123456789012'
   :role_name: ctrl-ctrl-DeployAdmin
   :role_prefix: "/dso/ctrl/master/"
