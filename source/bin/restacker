@@ -47,7 +47,7 @@ class Parser
         exit
       end
 
-      o.on('-l LOCATION', '--location=LOCATION', 'Where to deploy, ksp, kvp, kcp...') do |location|
+      o.on('-l LOCATION', '--location=LOCATION', 'Target Location or Plane to deploy to') do |location|
         opts[:location] = location
       end
 
@@ -63,7 +63,7 @@ class Parser
         opts[:options] = options
       end
 
-      o.on('-p PARAMS', '--params=PARAMS', 'Parameters to override current stack parameters in the form of', 'k1=v1,k2=v2. E.g., -p AmiId=ami-a4jd7928') do |params|
+      o.on('-p PARAMS', '--params=PARAMS', 'Parameters to override current stack parameters in the form of', 'k1=v1,k2=v2. E.g., -p AmiId=ami-a1b2c3d4') do |params|
         opts[:params] = params
       end
 
@@ -118,7 +118,7 @@ begin
   usage("Please specify an ACTION") && exit(0) if action.nil?
 
   if action == 'configure'
-    plane = options[:location] ? options[:location] : DEFAULT_PLANE
+    plane = RestackerConfig.get_plane(options)
     if !plane
       puts "Location not specified, plane is set to default: [#{DEFAULT_PLANE}]"
     end
@@ -132,7 +132,7 @@ begin
     restacker = Restacker.new(options.to_h) unless ['dump'].include?(action)
     case action
     when 'list'
-      puts "Listing stacks"
+      puts Rainbow("LISTING STACKS").white.bright.underline
       restacker.list_stacks
     when 'desc', 'describe'
       if options[:name]
@@ -170,16 +170,6 @@ begin
       else
         usage "Please specify a stack name (-n) to remove"
       end
-    # when 'configure'
-    #   plane = ""
-    #   if !options[:location]
-    #     puts "Location not specified, default plane #{DEFAULT_PLANE} used."
-    #     plane = DEFAULT_PLANE
-    #   else
-    #     plane = options[:location]
-    #   end
-    #   puts "Configuring target account for plane [#{plane}]:\n"
-    #   RestackerConfig.rc_configure(options[:location])
     when 'dump'
       if options[:template]
         # puts "Dumping stack parameters"
