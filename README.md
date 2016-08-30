@@ -69,6 +69,9 @@ The below configuration is an example of MyApp1 and MyApp2 as target accounts an
 ```
 $ cat ~/.restacker/restacker.yml
 
+:default:
+  :label: myapp1
+
 :master: &master_default
   :label: ctrl
   :account_number: '123456789012'
@@ -93,15 +96,5 @@ $ cat ~/.restacker/restacker.yml
     :role_name: myapp1-dso-DeployAdmin
     :role_prefix: "/dso/human/"
 
-:myapp2:
-  :region: us-west-2
-  :master:
-    <<: *master_default
-    :role_name: ctrl-myapp2-DeployAdmin
-  :target:
-    :label: myapp2
-    :account_number: '123098456765'
-    :role_name: myapp2-dso-DeployAdmin
-    :role_prefix: "/dso/human/"
-
+...
 ```
