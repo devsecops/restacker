@@ -70,7 +70,11 @@ class Restacker < BaseStacker
   def list_stacks
     resp = @cf.list_stacks
     stacks = resp.stack_summaries.select {|stack| stack.stack_status != DELETE_COMPLETE }
-    stacks.each {|stack| puts "#{stack.stack_status}: #{stack.stack_name}"}
+    stacks.each do |stack|
+      puts "#{Rainbow(stack.stack_status).red.bright}: #{stack.stack_name}" if stack.stack_status.match('FAILED')
+      puts "#{Rainbow(stack.stack_status).green.bright}: #{stack.stack_name}" if stack.stack_status.match('CREATE_COMPLETE')
+      puts "#{Rainbow(stack.stack_status).blue.bright}: #{stack.stack_name}" if stack.stack_status.match('UPDATE_COMPLETE')
+    end
   end
 
   def print_events(events)
