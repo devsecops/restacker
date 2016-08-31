@@ -1,23 +1,27 @@
 :default:
   :label: myapp1
 
-:master: &master_default
-  :label: ctrl
+:ctrl: &ctrl_default
+  :label: ctrlAcct
   :account_number: '123456789012'
   :role_name: ctrl-ctrl-DeployAdmin
-  :role_prefix: "/dso/ctrl/master/"
+  :role_prefix: "/dso/ctrl/ctrl/"
+  :bucket:
+    :name: kaos-installers
+    :prefix: cloudformation
+    :ami_key: latest_amis
 
-:ctrl:
+:ctrlAcct:
   :region: us-west-2
-  :master:
-    <<: *master_default
+  :ctrl:
+    <<: *ctrl_default
   :target:
-    <<: *master_default
+    <<: *ctrl_default
 
 :myapp1:
   :region: us-west-2
-  :master:
-    <<: *master_default
+  :ctrl:
+    <<: *ctrl_default
     :role_name: ctrl-myapp1-DeployAdmin
   :target:
     :label: myapp1
@@ -27,8 +31,8 @@
 
 :myapp2:
   :region: us-west-2
-  :master:
-    <<: *master_default
+  :ctrl:
+    <<: *ctrl_default
     :role_name: ctrl-myapp2-DeployAdmin
   :target:
     :label: myapp2
