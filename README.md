@@ -1,10 +1,11 @@
 # Restacker
 
-Restacker is the DevSecOps deployment swiss army knife. You can use it do deploy, update, migrate, and/or remove stacks.  
-Although not feature complete yet, you can begin using it to deploy or re-stack your existing apps.
+Restacker is the DevSecOps deployment swiss army knife. You can use it safely & securely deploy, update, migrate, and/or remove AWS stacks.  
+Although not feature complete yet, you can begin using it to deploy or re-stack your existing AWS accounts/instances.
 
 ## Install it:
-
+- Grab the binary from [GitHub Releases](https://github.com/devsecops/restacker/releases)
+- Or build from source:
 ```
 git clone https://github.com/devsecops/restacker.git
 cd restacker/source
@@ -61,9 +62,9 @@ Notes:
  - Deployed stack name will be in the form of NAME-DATE using today's date
  ```
 
-## Configuration
-
-To configure another target account, just add a section to ~/.restacker/restacker.yml listing the master & target account properties.  
+## Configure it
+- `restacker configure -l <location>`
+- Or copy the `restacker-sample.yml` to `~/.restacker/restacker.yml` & update the configurations
 The below configuration is an example of MyApp1 and MyApp2 as target accounts and CTRL as master.
 
 ```
@@ -72,23 +73,27 @@ $ cat ~/.restacker/restacker.yml
 :default:
   :label: myapp1
 
-:master: &master_default
-  :label: ctrl
+:ctrl: &ctrl_default
+  :label: ctrlAcct
   :account_number: '123456789012'
   :role_name: ctrl-ctrl-DeployAdmin
-  :role_prefix: "/dso/ctrl/master/"
+  :role_prefix: "/dso/ctrl/ctrl/"
+  :bucket:
+    :name: kaos-installers
+    :prefix: cloudformation
+    :ami_key: latest_amis
 
-:ctrl:
+:ctrlAcct:
   :region: us-west-2
-  :master:
-    <<: *master_default
+  :ctrl:
+    <<: *ctrl_default
   :target:
-    <<: *master_default
+    <<: *ctrl_default
 
 :myapp1:
   :region: us-west-2
-  :master:
-    <<: *master_default
+  :ctrl:
+    <<: *ctrl_default
     :role_name: ctrl-myapp1-DeployAdmin
   :target:
     :label: myapp1
@@ -96,5 +101,19 @@ $ cat ~/.restacker/restacker.yml
     :role_name: myapp1-dso-DeployAdmin
     :role_prefix: "/dso/human/"
 
+:myapp2:
+  :region: us-west-2
+  :ctrl:
+    <<: *ctrl_default
+    :role_name: ctrl-myapp2-DeployAdmin
+  :target:
+    :label: myapp2
+    :account_number: '123098456765'
+    :role_name: myapp2-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
 ...
 ```
+
+## More Info
+Checkout the [docs](./docs/) for detailed information.
