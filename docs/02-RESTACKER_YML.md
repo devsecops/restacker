@@ -1,6 +1,6 @@
 # RESTACKER.YML
 This is the configuration file for Restacker CLI.  
-See the sample [here](../source/restacker-sample.yml).
+See the sample [here](../source/restacker-example.yml).
 
 ## STRUCTURE
 In order for Restacker to work as expected, the following key:value pairs are required:

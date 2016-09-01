@@ -64,7 +64,7 @@ Notes:
 
 ## Configure it
 - `restacker configure -l <location>`
-- Or copy the `restacker-sample.yml` to `~/.restacker/restacker.yml` & update the configurations
+- Or copy the `restacker-example.yml` to `~/.restacker/restacker.yml` & update the configurations
 The below configuration is an example of MyApp1 and MyApp2 as target accounts and CTRL as master.
 
 ```

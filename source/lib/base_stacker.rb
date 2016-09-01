@@ -6,7 +6,7 @@ require 'rainbow'
 VERSION = '1.0.0'
 CONFIG_DIR="#{ENV['HOME']}/.restacker"
 CONFIG_FILE="#{CONFIG_DIR}/restacker.yml"
-SAMPLE_FILE = "#{__dir__}/../restacker-sample.yml"
+SAMPLE_FILE = "#{__dir__}/../restacker-example.yml"
 
 # needed here (after config_dir and defaults_file)
 require_relative 'auth'
