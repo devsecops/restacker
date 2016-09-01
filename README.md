@@ -79,9 +79,9 @@ $ cat ~/.restacker/restacker.yml
   :role_name: ctrl-ctrl-DeployAdmin
   :role_prefix: "/dso/ctrl/ctrl/"
   :bucket:
-    :name: kaos-installers
-    :prefix: cloudformation
-    :ami_key: latest_amis
+    :name: my-bucket
+    :prefix: "s3/bucket/prefix/"
+    :ami_key: ami_object_key
 
 :ctrlAcct:
   :region: us-west-2
