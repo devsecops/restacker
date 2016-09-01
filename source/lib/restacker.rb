@@ -26,22 +26,24 @@ class Restacker < BaseStacker
         stack_name: stack_name,
         parameters: parameters,
         disable_rollback: true).stack_id
-      puts "Creating stack #{stack_name} (#{stack_id})"
+
+      printf "%-30s : %s\n", Rainbow("CREATING STACK").white.underline, stack_name
+      printf "%-30s : %s\n", Rainbow("STACK ID").white.underline, stack_id
 
       stack = @cf.describe_stacks(stack_name: stack_id).stacks.pop
-      while stack and stack.stack_status == CREATE_IN_PROGRESS
+      while stack and stack.stack_status == STATUS[:CIP]
         sleep 30
         stack = @cf.describe_stacks(stack_name: stack_id).stacks.pop
         puts stack.stack_status
       end
 
-      if stack.stack_status == CREATE_COMPLETE
+      if stack.stack_status == STATUS[:CC]
         output = stack.outputs.pop
         if output
-          return output.output_value
+          return Rainbow("#{output.output_value}").green
         end
       else
-        puts "Stack creation failed (#{stack.stack_status})"
+        printf "%-30s : %s\n", Rainbow("CREATE_FAILED").red, stack.stack_status
       end
     rescue Aws::CloudFormation::Errors::ServiceError => e
       puts e.message
@@ -50,17 +52,17 @@ class Restacker < BaseStacker
 
   def delete_stack(stack_name)
     begin
-      puts "Deleting stack #{stack_name}"
       resp = @cf.describe_stacks(stack_name: stack_name)
       stack_id = resp.stacks.pop.stack_id
       @cf.delete_stack(stack_name: stack_name)
       stack = @cf.describe_stacks(stack_name: stack_id).stacks.pop
-      while stack and stack.stack_status == DELETE_IN_PROGRESS
+      while stack and stack.stack_status == STATUS[:DIP]
         sleep 30
         stack = @cf.describe_stacks(stack_name: stack_id).stacks.pop
-        puts stack.stack_status
+        puts Rainbow(stack.stack_status).white
       end
-      puts "Stack #{stack_name} deleted: #{stack_id}"
+      printf "%-30s : %s\n", Rainbow("STACK DELETED").green, stack_name
+      printf "%-30s : %s\n", Rainbow("STACK ID").green, stack_id
     rescue Aws::CloudFormation::Errors::ValidationError => e
       puts e.message
     end
@@ -68,9 +70,17 @@ class Restacker < BaseStacker
 
 
   def list_stacks
-    resp = @cf.list_stacks
-    stacks = resp.stack_summaries.select {|stack| stack.stack_status != DELETE_COMPLETE }
-    stacks.each {|stack| puts "#{stack.stack_status}: #{stack.stack_name}"}
+    resp = @cf.list_stacks.stack_summaries
+    stacks = resp.select {|stack| stack.stack_status != STATUS[:DC] }
+    stacks.each do |stack|
+      if stack.stack_status.match(STATUS[:CF])
+        printf("%-30s : %s\n", Rainbow(stack.stack_status).red, stack.stack_name)
+      elsif stack.stack_status.match(STATUS[:CC])
+        printf("%-30s : %s\n", Rainbow(stack.stack_status).green, stack.stack_name)
+      elsif stack.stack_status.match(STATUS[:UC])
+        printf("%-30s : %s\n", Rainbow(stack.stack_status).blue, stack.stack_name)
+      end
+    end
   end
 
   def print_events(events)
@@ -89,32 +99,38 @@ class Restacker < BaseStacker
   end
 
   def print_desc(stack)
-    puts "\nName: #{stack.stack_name}"
-    puts "ID: #{stack.stack_id}"
-    puts "Description: #{stack.description}"
-    puts "Creation Time: #{stack.creation_time}"
-    puts "Status: #{stack.stack_status}"
+    printf "%-30s : %s\n", Rainbow("Name").white, stack.stack_name
+    printf "%-30s : %s\n", Rainbow("ID").white, stack.stack_id
+    printf "%-30s : %s\n", Rainbow("Description").white, stack.description
+    printf "%-30s : %s\n", Rainbow("Creation Time").white, stack.creation_time
+    printf "%-30s : %s\n", Rainbow("Status").white, stack.stack_status
 
     if not stack.tags.empty?
-      puts "\nTags:"
-      stack.tags.each {|tag| puts "\t#{tag[:key]}:\t#{tag[:value]}" }
+      printf "%-30s :\n", Rainbow("Tags").white
+      stack.tags.each do |tag|
+        printf "\t%-30s : %s\n", Rainbow(tag[:key]).white, tag[:value]
+      end
     end
 
-    puts "\nParameters:" unless stack.parameters.empty?
-    stack.parameters.each do |param|
-      puts "\t#{param.parameter_key}:\t#{param.parameter_value}"
+    if not stack.parameters.empty?
+      printf "%-30s :\n", Rainbow("Parameters").white
+      stack.parameters.each do |param|
+        printf "\t%-40s : %s\n", Rainbow(param.parameter_key).white, param.parameter_value
+      end
     end
 
-    puts "\nOutputs:" unless stack.outputs.empty?
-    stack.outputs.each do |out|
-      puts "\t#{out.output_key}: #{out.output_value}\t -- #{out.description}"
+    if not stack.outputs.empty?
+      printf "%-30s :\n", Rainbow("Outputs").white
+      stack.outputs.each do |out|
+        printf "\t%-30s : %30s -- %s\n", Rainbow(out.output_key).white, out.output_value, out.description
+      end
     end
   end
 
   def describe_stack(stack_name)
     begin
       @cf.describe_stacks(stack_name: stack_name).stacks.each do |stack|
-        if stack.stack_status != DELETE_COMPLETE
+        if stack.stack_status != STATUS[:DC]
           print_desc(stack)
           if @options[:verbose]
             puts "\n"
@@ -291,50 +307,8 @@ class Restacker < BaseStacker
     end
   end
 
-  def self.configure(location)
-    puts "config file location: #{CONFIG_FILE}"
-    config = YAML.load_file(CONFIG_FILE)
-    if !config
-      puts "Make sure your ~/.restacker/restacker.yml file is configured. \n
-          See source/restacker-sample.yml for example."
-      exit(1)
-    end
-    target = config.fetch(location, {}).fetch(:target)
-
-    new_account_number, new_role_name, new_role_prefix = ""
-
-    old_account_number = target[:account_number].to_s
-    # old_account_number[0...7] = "********"
-
-    print "Label [\"#{target[:label]}\"]: "
-    new_label = gets.chomp
-
-    loop do
-      print "Account Number [#{old_account_number}]: "
-
-      new_account_number = gets.chomp
-      break if (new_account_number =~ /\d{12,}/ || new_account_number.empty?)
-    end
-
-    loop do
-      print "Role Name [#{target[:role_name]}]: "
-      new_role_name = gets.chomp
-      break if (new_role_name =~ /[\w&&\S\-]/ || new_role_name.empty?)
-    end
-
-    loop do
-      print "Role Prefix [#{target[:role_prefix]}]: "
-      new_role_prefix = gets.chomp
-      break if (new_role_prefix =~ /[\w&&\S\-\/]/ || new_role_prefix.empty?)
-    end
-
-    target[:label] = new_label.empty? ? target[:label] : new_label
-    target[:account_number] = new_account_number.empty? ? target[:account_number] : new_account_number
-    target[:role_name] = new_role_name.empty? ? target[:role_name] : new_role_name
-    target[:role_prefix] = new_role_prefix.empty? ? target[:role_prefix] : new_role_prefix
-
-    File.open(CONFIG_FILE, 'w') do |f|
-      f.write config.to_yaml
-    end
+  def self.amis
+    puts RestackerConfig.latest_amis
+    # puts RestackerConfig.latest_amis("rhel6")
   end
 end

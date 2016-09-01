@@ -1,22 +1,22 @@
-Restacker
-=======
-Restacker is the DevSecOps deployment swiss army knife. You can use it do deploy,
-migrate and/or remove stacks. Although not feature complete yet, you can begin
-using it to deploy or restack your existing apps.
+# Restacker
 
-Install it:
---------------
-````
+Restacker is the DevSecOps deployment swiss army knife. You can use it safely & securely deploy, update, migrate, and/or remove AWS stacks.  
+Although not feature complete yet, you can begin using it to deploy or re-stack your existing AWS accounts/instances.
+
+## Install it:
+- Grab the binary from [GitHub Releases](https://github.com/devsecops/restacker/releases)
+- Or build from source:
+```
 git clone https://github.com/devsecops/restacker.git
 cd restacker/source
 gem build restacker.gemspec
-gem install restacker-0.0.11.gem
-rbenv init -
-````
+gem install restacker
+# if you're using rbenv, then: rbenv rehash
+```
 
-Use it:
---------------
-````
+## Use it:
+
+```
 $ restacker
 Please specify an ACTION
 
@@ -60,29 +60,60 @@ Notes:
  - If no template file path is provided when restacking restacker will use the same
    template as if currently deployed.
  - Deployed stack name will be in the form of NAME-DATE using today's date
- ````
+ ```
 
-Configuration
---------------
-Restacker is out of the box configured to use KCP as the master account and KSP
-as the target account (deployment account). To configure another target account
-just add a section to ~/.restacker/restacker.yml listing the master & target
-account properties. The below configuration is an example of KSP and KVP as
-target accounts and KCP as master.
+## Configure it
+- `restacker configure -l <location>`
+- Or copy the `restacker-sample.yml` to `~/.restacker/restacker.yml` & update the configurations
+The below configuration is an example of MyApp1 and MyApp2 as target accounts and CTRL as master.
 
-````
+```
 $ cat ~/.restacker/restacker.yml
----
-:myapp:
+
+:default:
+  :label: myapp1
+
+:ctrl: &ctrl_default
+  :label: ctrlAcct
+  :account_number: '123456789012'
+  :role_name: ctrl-ctrl-DeployAdmin
+  :role_prefix: "/dso/ctrl/ctrl/"
+  :bucket:
+    :name: kaos-installers
+    :prefix: cloudformation
+    :ami_key: latest_amis
+
+:ctrlAcct:
   :region: us-west-2
-  :master:
-    :label: control
-    :account_number: '123456789012'
-    :role_name: CTL-my-app-DeploymentAdmin
-    :role_prefix: "/dso/ctrl/my-app/"
+  :ctrl:
+    <<: *ctrl_default
   :target:
-    :label: target
+    <<: *ctrl_default
+
+:myapp1:
+  :region: us-west-2
+  :ctrl:
+    <<: *ctrl_default
+    :role_name: ctrl-myapp1-DeployAdmin
+  :target:
+    :label: myapp1
     :account_number: '098765432123'
-    :role_name: TGT-dso-DeploymentAdmin
-    :role_prefix: "/human/dso/"
-````
+    :role_name: myapp1-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
+:myapp2:
+  :region: us-west-2
+  :ctrl:
+    <<: *ctrl_default
+    :role_name: ctrl-myapp2-DeployAdmin
+  :target:
+    :label: myapp2
+    :account_number: '123098456765'
+    :role_name: myapp2-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
+...
+```
+
+## More Info
+Checkout the [docs](./docs/) for detailed information.

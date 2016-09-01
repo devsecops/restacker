@@ -14,6 +14,7 @@ ACTIONS = {
     remove: 'Removes the given deployment',
     configure: 'Configure the target account in the restacker.yml file',
     dump: 'Dumps the default configuration for a given template or module',
+    amis: 'Shows latest AMIs in S3 bucket',
     console: 'Opens the AWS Console'
 }
 ACTIONS_HELP = "ACTIONS\n\n" + ACTIONS.to_yaml.sub("---\n", '').gsub(': ', "\t").gsub(':', "    ")
@@ -47,7 +48,7 @@ class Parser
         exit
       end
 
-      o.on('-l LOCATION', '--location=LOCATION', 'Where to deploy, ksp, kvp, kcp...') do |location|
+      o.on('-l LOCATION', '--location=LOCATION', 'Target Location or Plane to deploy to') do |location|
         opts[:location] = location
       end
 
@@ -63,7 +64,7 @@ class Parser
         opts[:options] = options
       end
 
-      o.on('-p PARAMS', '--params=PARAMS', 'Parameters to override current stack parameters in the form of', 'k1=v1,k2=v2. E.g., -p AmiId=ami-a4jd7928') do |params|
+      o.on('-p PARAMS', '--params=PARAMS', 'Parameters to override current stack parameters in the form of', 'k1=v1,k2=v2. E.g., -p AmiId=ami-a1b2c3d4') do |params|
         opts[:params] = params
       end
 
@@ -116,36 +117,32 @@ begin
   action = unparsed.pop
   puts(VERSION) || exit(0) if options[:version]
   usage("Please specify an ACTION") && exit(0) if action.nil?
+  plane = RestackerConfig.get_plane(options)
 
   if action == 'configure'
-    plane = options[:location] ? options[:location] : DEFAULT_PLANE
-    if !plane
-      puts "Location not specified, plane is set to default: [#{DEFAULT_PLANE}]"
-    end
-    puts "Configuring target plane [#{plane}]: "
-    RestackerConfig.load_config(plane.to_sym)
-    Restacker.configure(plane.to_sym)
+    printf "%-30s : %s\n", Rainbow("CONFIGURING PLANE").white.bright.underline, plane
+    RestackerConfig.configure(plane)
     exit(0)
   end
 
   if ACTIONS.keys.push(:aws).include?(action.to_sym)
-    restacker = Restacker.new(options.to_h) unless ['dump'].include?(action)
+    restacker = Restacker.new(options.to_h) unless ['dump', 'amis'].include?(action)
     case action
     when 'list'
-      puts "Listing stacks"
+      printf "%-30s : %s\n", Rainbow("LISTING STACKS").white.bright.underline, plane
       restacker.list_stacks
     when 'desc', 'describe'
       if options[:name]
-        puts "Describing #{options[:name]}"
+        puts Rainbow("DESCRIBING STACK").white.bright.underline
         restacker.describe_stack(options[:name])
       else
         usage "Please specify a stack name (-n) to describe"
       end
     when 'restack'
       if options[:name]
-        puts "Restacking #{options[:name]}"
+        printf "%-30s : %s\n", Rainbow("RESTACKING").white.bright.underline, options[:name]
         restacker.restack_by_name(options[:name])
-        puts "Now run migrate followed by remove"
+        puts Rainbow("Now run migrate followed by remove").white.bright
       else
         usage "Please specify a stack name (-n) to restack"
       end
@@ -165,28 +162,20 @@ begin
       end
     when 'remove'
       if options[:name]
-        puts "Removing stack"
+        printf "%-30s : %s\n", Rainbow("REMOVING STACK").white.bright.underline, options[:name]
         restacker.delete_stack(options[:name])
       else
         usage "Please specify a stack name (-n) to remove"
       end
-    # when 'configure'
-    #   plane = ""
-    #   if !options[:location]
-    #     puts "Location not specified, default plane #{DEFAULT_PLANE} used."
-    #     plane = DEFAULT_PLANE
-    #   else
-    #     plane = options[:location]
-    #   end
-    #   puts "Configuring target account for plane [#{plane}]:\n"
-    #   RestackerConfig.rc_configure(options[:location])
     when 'dump'
       if options[:template]
-        # puts "Dumping stack parameters"
         Restacker.dump_stack_params(options)
       else
         usage "Please specify a stack template (-t) or module (-m)"
       end
+    when 'amis'
+      puts Rainbow("SHOWING AMIS").white.bright.underline
+      Restacker.amis
     when 'console'
       AwsCli.new(options).console(options)
     when 'aws'

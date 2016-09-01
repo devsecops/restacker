@@ -1,13 +1,41 @@
----
-:myapp:
+:default:
+  :label: myapp1
+
+:ctrl: &ctrl_default
+  :label: ctrlAcct
+  :account_number: '123456789012'
+  :role_name: ctrl-ctrl-DeployAdmin
+  :role_prefix: "/dso/ctrl/ctrl/"
+  :bucket:
+    :name: kaos-installers
+    :prefix: cloudformation
+    :ami_key: latest_amis
+
+:ctrlAcct:
   :region: us-west-2
-  :master:
-    :label: control
-    :account_number: '100352119871'
-    :role_name: CTL-my-app-DeploymentAdmin
-    :role_prefix: "/dso/ctrl/my-app/"
+  :ctrl:
+    <<: *ctrl_default
   :target:
-    :label: target
-    :account_number: '717986480831'
-    :role_name: TGT-dso-DeploymentAdmin
-    :role_prefix: "/human/dso/"
+    <<: *ctrl_default
+
+:myapp1:
+  :region: us-west-2
+  :ctrl:
+    <<: *ctrl_default
+    :role_name: ctrl-myapp1-DeployAdmin
+  :target:
+    :label: myapp1
+    :account_number: '098765432123'
+    :role_name: myapp1-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
+
+:myapp2:
+  :region: us-west-2
+  :ctrl:
+    <<: *ctrl_default
+    :role_name: ctrl-myapp2-DeployAdmin
+  :target:
+    :label: myapp2
+    :account_number: '123098456765'
+    :role_name: myapp2-dso-DeployAdmin
+    :role_prefix: "/dso/human/"
