@@ -1,4 +1,5 @@
 require 'yaml'
+require_relative 'restacker_config'
 
 CREDS_FILE="#{CONFIG_DIR}/auth"
 
@@ -7,8 +8,8 @@ class Auth
   # TODO use keychain to save creds
   def self.login(options, config, location)
     auth_file     = "#{CREDS_FILE}.#{location}"
-    region        = default_region(config)
-    profile_name  = options[:profile]
+    region        = RestackerConfig.default_region
+    profile_name  = options[:profile] || RestackerConfig.default_profile
     username      = options.fetch(:username)
 
     # if no ctrl plane specified, authenticate directly
@@ -16,10 +17,12 @@ class Auth
 
     if File.exists?(auth_file)
       session = YAML.load_file(auth_file)
-      if valid_session?(region, session)
+      if session && valid_session?(region, session)
+        create_auth_file(auth_file, session)
         return cloudformation_client(region, session)
       else # if session expired
         session = get_auth_session(profile_name, username, config)
+        create_auth_file(auth_file, session)
         return cloudformation_client(region, session)
       end
     else # if file does not exist
@@ -38,37 +41,14 @@ class Auth
     STDIN.gets(7).chomp
   end
 
-  def self.target_config(config)
-    target_config = config.fetch(:target)
-    target = {}
-    target[:label]          = target_config.fetch(:account_number)
-    target[:account_number] = target_config.fetch(:account_number)
-    target[:role_prefix]    = target_config.fetch(:role_prefix, nil)
-    target[:role_name]      = target_config.fetch(:role_name, nil)
-    target
-  end
-
-  def self.ctrl_config(config)
-    ctrl_config = config.fetch(:ctrl)
-    ctrl = {}
-    ctrl[:account_number] = ctrl_config.fetch(:account_number)
-    ctrl[:role_prefix]    = ctrl_config.fetch(:role_prefix)
-    ctrl[:role_name]      = ctrl_config.fetch(:role_name)
-    ctrl
-  end
-
-  def self.default_region(config)
-    config.fetch(:region)
-  end
-
   def self.get_creds(username, config)
-    region = default_region(config)
-    target = target_config(config) # target account will always exist in restacker.yml
+    region = RestackerConfig.default_region(config)
+    target = RestackerConfig.target_config(config) # target account will always exist in restacker.yml
 
     if config[:ctrl].nil?
       target_plane_auth(target)
     else
-      ctrl = ctrl_config(config)
+      ctrl = RestackerConfig.ctrl_config(config)
       control_plane_auth(ctrl, target, username, region)
     end
   end
@@ -106,15 +86,15 @@ class Auth
   end
 
   def self.valid_session?(region, creds)
-    puts "inside valid_session?"
     begin
       Aws::CloudFormation::Client.new(region: region, credentials: creds).list_stacks
-      puts "valid"
       return true
-    rescue Aws::CloudFormation::Errors::ExpiredToken
-      puts "invalid"
-      return false
+    rescue Aws::CloudFormation::Errors::ExpiredToken => expired
+      raise expired.message
+    rescue => e
+      raise e.message
     end
+    return false
   end
 
   def self.get_auth_session(profile_name, username, config)
@@ -129,8 +109,8 @@ class Auth
   end
 
   def self.create_auth_file(file_name, session)
-    File.open(auth_file, 'w') do |f|
-      f.write YAML.dump(creds)
+    File.open(file_name, 'w') do |f|
+      f.write YAML.dump(session)
     end
   end
 end
