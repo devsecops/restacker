@@ -8,9 +8,9 @@ class Auth
   # TODO use keychain to save creds
   def self.login(options, config, location)
     auth_file     = "#{CREDS_FILE}.#{location}"
-    region        = RestackerConfig.default_region
-    profile_name  = options[:profile] || RestackerConfig.default_profile
-    username      = options.fetch(:username)
+    region        = config.fetch(:region)
+    profile_name  = RestackerConfig.find_profile(options)
+    username      = RestackerConfig.find_user(options)
 
     # if no ctrl plane specified, authenticate directly
     return target_plane_auth(region, profile_name) if config[:ctrl].nil?
@@ -42,7 +42,7 @@ class Auth
   end
 
   def self.get_creds(username, config)
-    region = RestackerConfig.default_region(config)
+    region = config.fetch(:region)
     target = RestackerConfig.target_config(config) # target account will always exist in restacker.yml
 
     if config[:ctrl].nil?
@@ -90,11 +90,9 @@ class Auth
       Aws::CloudFormation::Client.new(region: region, credentials: creds).list_stacks
       return true
     rescue Aws::CloudFormation::Errors::ExpiredToken => expired
-      raise expired.message
-    rescue => e
-      raise e.message
+      puts expired.message
+      return false
     end
-    return false
   end
 
   def self.get_auth_session(profile_name, username, config)
