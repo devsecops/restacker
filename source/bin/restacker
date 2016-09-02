@@ -117,7 +117,7 @@ begin
   action = unparsed.pop
   puts(VERSION) || exit(0) if options[:version]
   usage("Please specify an ACTION") && exit(0) if action.nil?
-  plane = RestackerConfig.get_plane(options)
+  plane = RestackerConfig.find_plane(options)
 
   if action == 'configure'
     printf "%-s (%s)\n", Rainbow("CONFIGURING PLANE").white.bright.underline, plane
