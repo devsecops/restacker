@@ -27,9 +27,8 @@ STATUS = {
 
 class BaseStacker
   def initialize(options)
-    location = RestackerConfig.get_plane(options)
+    location = RestackerConfig.find_plane(options)
     config = RestackerConfig.load_config(location)
-
     # use default region if not passed in from cli
     config[:region] = options[:region] if options[:region]
     options[:region] = config[:region] unless options[:region]
