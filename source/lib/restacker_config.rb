@@ -1,21 +1,12 @@
 class RestackerConfig
   def self.load_config(plane)
-    plane = get_plane if plane.nil?
+    plane = find_plane if plane.nil?
     config = find_config
     if config[plane].nil?
       puts "Plane not found (#{plane}). Please see #{CONFIG_FILE}."
       exit
     end
     config[plane]
-  end
-
-  def self.get_plane(options)
-    if options[:location]
-      plane = options[:location]
-    else
-      plane = default_plane
-    end
-    plane.to_sym
   end
 
   def self.configure(location)
@@ -85,16 +76,18 @@ class RestackerConfig
     ctrl
   end
 
-  def self.default_region
-    find_config.fetch(:region, nil)
+  def self.find_profile(options)
+    plane = find_plane(options)
+    options[:profile] || find_config[plane][:profile] || find_config[:default][:profile]
   end
 
-  def self.default_profile
-    find_config.fetch(:profile, nil)
+  def self.find_user(options)
+    plane = find_plane(options)
+    options[:username] || find_config[plane].fetch(:username, nil) || ENV['USER']
   end
 
-  def self.default_user
-    find_config.fetch(:username, nil)
+  def self.find_plane(options)
+    (options[:location] || find_config[:default][:label]).to_sym || raise(Rainbow("Location was not provided and no default location was found in #{CONFIG_FILE}.").red)
   end
 
   def self.find_config
@@ -113,11 +106,7 @@ class RestackerConfig
     config
   end
 
-  def self.default_plane
-    find_config[:default][:label] || raise(Rainbow("Location was not provided and no default location was found in #{CONFIG_FILE}.").red)
-  end
-
-  def self.bucket
+  def self.bucket(options)
     find_config[:ctrl][:bucket][:name]
   end
 
