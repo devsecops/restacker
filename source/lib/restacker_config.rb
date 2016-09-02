@@ -51,10 +51,7 @@ class RestackerConfig
 
   def self.latest_amis(rhel=nil)
     latest_amis = YAML.load(get_object(find_config[:ctrl][:bucket][:ami_key]))
-    if rhel
-      return latest_amis[rhel]
-    end
-    latest_amis
+    return latest_amis[rhel] || latest_amis
   end
 
   def self.target_config(config)
@@ -106,7 +103,7 @@ class RestackerConfig
     config
   end
 
-  def self.bucket(options)
+  def self.bucket
     find_config[:ctrl][:bucket][:name]
   end
 
