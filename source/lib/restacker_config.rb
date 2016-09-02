@@ -13,7 +13,7 @@ class RestackerConfig
     if options[:location]
       plane = options[:location]
     else
-      plane = find_default_plane()
+      plane = default_plane
     end
     plane.to_sym
   end
@@ -66,15 +66,44 @@ class RestackerConfig
     latest_amis
   end
 
-  private
+  def self.target_config(config)
+    target_config = config.fetch(:target)
+    target = {}
+    target[:label]          = target_config.fetch(:account_number)
+    target[:account_number] = target_config.fetch(:account_number)
+    target[:role_prefix]    = target_config.fetch(:role_prefix, nil)
+    target[:role_name]      = target_config.fetch(:role_name, nil)
+    target
+  end
+
+  def self.ctrl_config(config)
+    ctrl_config = config.fetch(:ctrl)
+    ctrl = {}
+    ctrl[:account_number] = ctrl_config.fetch(:account_number)
+    ctrl[:role_prefix]    = ctrl_config.fetch(:role_prefix)
+    ctrl[:role_name]      = ctrl_config.fetch(:role_name)
+    ctrl
+  end
+
+  def self.default_region
+    find_config.fetch(:region, nil)
+  end
+
+  def self.default_profile
+    find_config.fetch(:profile, nil)
+  end
+
+  def self.default_user
+    find_config.fetch(:username, nil)
+  end
+
   def self.find_config
     Dir.mkdir(CONFIG_DIR) unless Dir.exist?(CONFIG_DIR)
     begin
       if File.exist?(CONFIG_FILE)
         config = YAML.load_file(CONFIG_FILE)
       else
-        config = YAML.load_file(SAMPLE_FILE)
-        File.open(CONFIG_FILE, 'w') { |f| f.write config.to_yaml }
+        File.open(CONFIG_FILE, 'w') { |f| f.write SAMPLE_FILE.to_yaml }
       end
     rescue Psych::SyntaxError
       raise "Improperly formatted YAML file: #{CONFIG_FILE}."
@@ -84,7 +113,7 @@ class RestackerConfig
     config
   end
 
-  def self.find_default_plane
+  def self.default_plane
     find_config[:default][:label] || raise(Rainbow("Location was not provided and no default location was found in #{CONFIG_FILE}.").red)
   end
 
