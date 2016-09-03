@@ -1,5 +1,6 @@
 :default:
   :label: myapp1
+  :profile: default
 
 :ctrl: &ctrl_default
   :label: ctrlAcct
@@ -39,3 +40,12 @@
     :account_number: '123098456765'
     :role_name: myapp2-dso-DeployAdmin
     :role_prefix: "/dso/human/"
+
+:learn:
+  :region: us-west-2
+  :profile: learn
+  :target:
+    :label: pblearning
+    :account_number: '254175822556'
+    :bucket:
+      :name: pblearning
