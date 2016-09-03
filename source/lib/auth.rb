@@ -82,7 +82,7 @@ class Auth
 
   def self.target_plane_auth(region, profile_name)
     Aws.config[:credentials] = Aws::SharedCredentials.new(profile_name: profile_name)
-    return Aws::CloudFormation::Client.new(region: region), nil
+    return Aws::CloudFormation::Client.new(region: region), Aws.config[:credentials].credentials
   end
 
   def self.valid_session?(region, creds)
