@@ -43,9 +43,9 @@
 
 :learn:
   :region: us-west-2
-  :profile: learn
+  :profile: learning-profile
   :target:
-    :label: pblearning
-    :account_number: '254175822556'
+    :label: myLearningAccount
+    :account_number: '123456789012'
     :bucket:
-      :name: pblearning
+      :name: my-learning-bucket
