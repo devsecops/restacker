@@ -1,6 +1,6 @@
 # RESTACKER.YML
 This is the configuration file for Restacker CLI.  
-See the sample [here](../source/restacker-sample.yml).
+See the sample [here](../source/restacker-example.yml).
 
 ## STRUCTURE
 In order for Restacker to work as expected, the following key:value pairs are required:
@@ -35,9 +35,9 @@ In order for Restacker to work as expected, the following key:value pairs are re
   :role_name: ctrl-ctrl-DeployAdmin
   :role_prefix: "/dso/ctrl/ctrl/"
   :bucket:
-    :name: kaos-installers
-    :prefix: cloudformation
-    :ami_key: latest_amis
+    :name: my-bucket
+    :prefix: "s3/bucket/prefix/"
+    :ami_key: ami_object_key
 
 :ctrlAcct:
   :region: us-west-2

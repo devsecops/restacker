@@ -6,7 +6,7 @@ require 'rainbow'
 VERSION = '1.0.0'
 CONFIG_DIR="#{ENV['HOME']}/.restacker"
 CONFIG_FILE="#{CONFIG_DIR}/restacker.yml"
-SAMPLE_FILE = "#{__dir__}/../restacker-sample.yml"
+SAMPLE_FILE = "#{__dir__}/../restacker-example.yml"
 
 # needed here (after config_dir and defaults_file)
 require_relative 'auth'
@@ -27,9 +27,8 @@ STATUS = {
 
 class BaseStacker
   def initialize(options)
-    location = RestackerConfig.get_plane(options)
+    location = RestackerConfig.find_plane(options)
     config = RestackerConfig.load_config(location)
-
     # use default region if not passed in from cli
     config[:region] = options[:region] if options[:region]
     options[:region] = config[:region] unless options[:region]

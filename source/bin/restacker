@@ -111,16 +111,16 @@ end
 options, unparsed = Parser.parse(ARGV)
 
 # set the username to $USER if not specified
-options[:username] = ENV['USER'] if options[:username].nil?
+options[:username] = RestackerConfig.find_user(options)
 
 begin
   action = unparsed.pop
   puts(VERSION) || exit(0) if options[:version]
   usage("Please specify an ACTION") && exit(0) if action.nil?
-  plane = RestackerConfig.get_plane(options)
+  plane = RestackerConfig.find_plane(options)
 
   if action == 'configure'
-    printf "%-30s : %s\n", Rainbow("CONFIGURING PLANE").white.bright.underline, plane
+    printf "%-s (%s)\n", Rainbow("CONFIGURING PLANE").white.bright.underline, plane
     RestackerConfig.configure(plane)
     exit(0)
   end
@@ -129,7 +129,7 @@ begin
     restacker = Restacker.new(options.to_h) unless ['dump', 'amis'].include?(action)
     case action
     when 'list'
-      printf "%-30s : %s\n", Rainbow("LISTING STACKS").white.bright.underline, plane
+      printf "%-s (%s)\n", Rainbow("LISTING STACKS").white.bright.underline, plane
       restacker.list_stacks
     when 'desc', 'describe'
       if options[:name]
@@ -140,7 +140,7 @@ begin
       end
     when 'restack'
       if options[:name]
-        printf "%-30s : %s\n", Rainbow("RESTACKING").white.bright.underline, options[:name]
+        printf "%-s (%s)\n", Rainbow("RESTACKING").white.bright.underline, options[:name]
         restacker.restack_by_name(options[:name])
         puts Rainbow("Now run migrate followed by remove").white.bright
       else
@@ -162,7 +162,7 @@ begin
       end
     when 'remove'
       if options[:name]
-        printf "%-30s : %s\n", Rainbow("REMOVING STACK").white.bright.underline, options[:name]
+        printf "%-s (%s)\n", Rainbow("REMOVING STACK").white.bright.underline, options[:name]
         restacker.delete_stack(options[:name])
       else
         usage "Please specify a stack name (-n) to remove"
@@ -182,7 +182,7 @@ begin
       AwsCli.new(options).cmd(options[:params], options[:debug])
     end
   else
-    usage "Unknown ACTION: #{action}"
+    usage Rainbow("Unknown ACTION: #{action}").red
   end
 rescue => e
   puts options[:debug]

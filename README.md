@@ -64,7 +64,7 @@ Notes:
 
 ## Configure it
 - `restacker configure -l <location>`
-- Or copy the `restacker-sample.yml` to `~/.restacker/restacker.yml` & update the configurations
+- Or copy the `restacker-example.yml` to `~/.restacker/restacker.yml` & update the configurations
 The below configuration is an example of MyApp1 and MyApp2 as target accounts and CTRL as master.
 
 ```
@@ -79,9 +79,9 @@ $ cat ~/.restacker/restacker.yml
   :role_name: ctrl-ctrl-DeployAdmin
   :role_prefix: "/dso/ctrl/ctrl/"
   :bucket:
-    :name: kaos-installers
-    :prefix: cloudformation
-    :ami_key: latest_amis
+    :name: my-bucket
+    :prefix: "s3/bucket/prefix/"
+    :ami_key: ami_object_key
 
 :ctrlAcct:
   :region: us-west-2
