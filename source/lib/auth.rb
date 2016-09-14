@@ -82,7 +82,11 @@ class Auth
 
   def self.target_plane_auth(region, profile_name)
     Aws.config[:credentials] = Aws::SharedCredentials.new(profile_name: profile_name)
-    return Aws::CloudFormation::Client.new(region: region), Aws.config[:credentials].credentials
+    cf_client = Aws::CloudFormation::Client.new(region: region)
+    sts_client = Aws::STS::Client.new(region: region)
+    sts_policy = '{"Version": "2012-10-17", "Statement": [{"Sid": "Stmt1437414476731", "Action": "*","Effect": "Allow", "Resource": "*" }]}'
+    sts_creds = sts_client.get_federation_token(name: 'Restacker', policy: sts_policy).credentials
+    return cf_client, sts_creds
   end
 
   def self.valid_session?(region, creds)
