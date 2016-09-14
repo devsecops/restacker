@@ -1,0 +1,297 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Generic Restacker CFn Template for Web Applications.",
+
+  "Parameters" : {
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m3.medium",
+      "AllowedValues" : ["m3.medium","m3.large","m3.xlarge","m3.2xlarge",
+                         "c4.large","c4.xlarge","c4.2xlarge",
+                         "r3.2xlarge", "r3.large",
+                         "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type support HVM."
+    },
+    "EbsVolumeSize" : {
+      "Description" : "The size of the EBS volume to be created as root",
+      "Type" : "String"
+    },
+    "KeyName" : {
+      "Description" : "The EC2 Key Pair to allow SSH access to the instances",
+      "Type" : "String"
+    },
+    "ApplicationSecurityGroups": {
+      "Type": "List<AWS::EC2::SecurityGroup::Id>",
+      "Description" : "The security group ID that will grant access to the Service from the ELB.",
+      "ConstraintDescription": "Must be list of EC2 security group ids"
+   },
+    "ElbSecurityGroups": {
+      "Type": "List<AWS::EC2::SecurityGroup::Id>",
+      "Description" : "The security group ID that will grant access to the ELB.",
+      "ConstraintDescription": "Must be list of EC2 security group ids"
+   },
+    "AppSubnets": {
+      "Type": "String",
+      "Description" : "A subnet ID where the app will run"
+   },
+    "PublicSubnets": {
+      "Type": "String",
+      "Description" : "A subnet ID where ELB will run"
+   },
+    "VpcId": {
+      "Type": "String",
+      "Description": "The VPC ID holding Subnets specified above."
+    },
+    "InstanceProfileName": {
+      "Type": "String",
+      "Description" : "Instance Profile to associate with this instance."
+    },
+    "ServicePlane" : {
+      "Description" : "The plane (all lowercase) where this stack will be stood up",
+      "Type" : "String",
+      "AllowedPattern" : "[a-z]+"
+    },
+    "Environment" : {
+      "Description" : "The deployment environment or color, e.g., blue, green, dev, test, prod, etc.",
+      "Type" : "String"
+    },
+    "ServiceName": {
+      "Type": "String",
+      "Description" : "The lowercase service name to be used to tag instances (alphanumeric with dashes).",
+      "AllowedPattern" : "[a-z0-9\\-]+"
+    },
+    "TimeStamp": {
+      "Type": "String",
+      "Description" : "The stack creation timestamp in the format of %Y%m%d-%H%M"
+    },
+    "AmiId": {
+      "Type": "String",
+      "Description" : "Default AMI for this instance."
+    },
+    "StackCreator" : {
+      "Type": "String",
+      "Description" : "IAM User ID of the stack creator"
+    },
+    "EnvironmentParameters" : {
+      "Type": "String",
+      "Description" : "Comma sepparated key/value pairs of environment parameters in the form of ENV1=VAL1,ENV2=VAL2, to be placed in /etc/profile.d/<SERVICE_NAME>.sh"
+    },
+    "S3LoggingBucket": {
+      "Type": "String",
+      "Description" : "The S3 bucket to be used for ELB logging."
+    },
+    "S3InstallersBucket": {
+      "Type": "String",
+      "Description" : "The S3 bucket that contains the Service application code."
+    },
+    "UserDataScript": {
+      "Type": "String",
+      "Description" : "The GPG encrypted userdata.sh scipt to be executed after init. Expected to live in S3 Bucket."
+    },
+    "ApplicationBundle": {
+      "Type": "String",
+      "Description" : "The GPG encrypted application bundle to be installed by userdata. Expected to live in S3 Bucket."
+    },
+    "SecurityTagKey": {
+      "Type": "String",
+      "Description" : "The security tag key to be used for all resources."
+    },
+    "SecurityTagValue": {
+      "Type": "String",
+      "Description" : "The security tag value to be used for all resources."
+    },
+    "NotificationTopic" : {
+      "Type": "String",
+      "Description" : "The ARN of an SNS topic to use for service health alerts."
+    },
+    "ASGMin": {
+      "Type": "String",
+      "Description": "The minimum number of Instances for the Autoscale group.",
+      "Default" : "1"
+    },
+
+    "ASGDesired": {
+      "Type": "String",
+      "Description": "The Desired number of Instances for the Autoscale group.",
+      "Default" : "1"
+    },
+
+    "ASGMax": {
+      "Type": "String",
+      "Description": "The maximum number of Instances for the Autoscale group.",
+      "Default" : "1"
+		},
+
+    "LoadBalancerName": {
+      "Type": "String",
+      "Description": "The load balancer name"
+		},
+
+    "InstancePort": {
+      "Type": "Number",
+      "Description": "The load balancer listener instance port",
+      "Default" : "443"
+		},
+
+    "LoadBalancerPort": {
+      "Type": "Number",
+      "Description": "The load balancer listener port",
+      "Default" : "443"
+		}
+  },
+
+  "Resources" : {
+    "ServiceGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "VPCZoneIdentifier": [{ "Ref": "AppSubnets" }],
+        "LaunchConfigurationName" : { "Ref" : "ServiceLaunchConfig" },
+        "LoadBalancerNames" : [ { "Ref" : "ServiceLoadBalancer" } ],
+        "MinSize" :         { "Ref" : "ASGMin" },
+        "DesiredCapacity" : { "Ref" : "ASGDesired" },
+        "MaxSize" :         { "Ref" : "ASGMax" },
+        "NotificationConfiguration" : {
+        	"NotificationTypes" : [ "autoscaling:EC2_INSTANCE_LAUNCH", "autoscaling:EC2_INSTANCE_LAUNCH_ERROR", "autoscaling:EC2_INSTANCE_TERMINATE", "autoscaling:EC2_INSTANCE_TERMINATE_ERROR" ],
+   			"TopicARN" : { "Ref" : "NotificationTopic" }
+   		},
+        "Tags" : [
+          { "Key" : "CreatedBy", "Value" : { "Ref" : "StackCreator"}, "PropagateAtLaunch": "true" },
+          { "Key" : "Name", "Value" :  {"Fn::Join" : [ "-", [ { "Ref" : "ServicePlane"} ,{ "Ref" : "ServiceName"}, { "Ref" : "Environment" } , { "Ref" : "TimeStamp" } ]]}, "PropagateAtLaunch": "true" },
+          { "Key" : { "Ref" : "SecurityTagKey"}, "Value" :  { "Ref" : "SecurityTagValue"}, "PropagateAtLaunch": "true" },
+          { "Key" : "Service", "Value" :  { "Ref" : "ServiceName"}, "PropagateAtLaunch": "true" }
+        ]
+      }
+    },
+
+
+    "ServiceLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "IamInstanceProfile" : { "Ref" : "InstanceProfileName" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "ImageId" : { "Ref" : "AmiId" },
+        "PlacementTenancy" : "dedicated",
+        "SecurityGroups" : { "Ref" : "ApplicationSecurityGroups" } ,
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "BlockDeviceMappings" :  [ {"DeviceName" : "/dev/sda1", "Ebs" : { "VolumeType":"gp2","VolumeSize" : { "Ref" : "EbsVolumeSize" } } }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+          "#!/bin/bash\n",
+          "# insert rest of bash script here..."
+        ]]}}
+      }
+    },
+    "ServiceLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": {
+          "Ref": "LoadBalancerName"
+        },
+        "AccessLoggingPolicy": {
+          "EmitInterval": 5,
+          "Enabled": "true",
+          "S3BucketName": {
+            "Ref": "S3LoggingBucket"
+          }
+        },
+        "CrossZone": "true",
+        "HealthCheck": {
+          "HealthyThreshold": "3",
+          "Interval": "30",
+          "Target": {
+            "Fn::Join": ["", ["TCP:", {
+              "Ref": "InstancePort"
+            }]]
+          },
+          "Timeout": "5",
+          "UnhealthyThreshold": "5"
+        },
+        "Listeners": [{
+          "InstancePort": {
+            "Ref": "InstancePort"
+          },
+          "InstanceProtocol": "TCP",
+          "LoadBalancerPort": {
+            "Ref": "LoadBalancerPort"
+          },
+          "Protocol": "TCP"
+        }],
+        "Scheme": "internet-facing",
+        "SecurityGroups": {
+          "Ref": "ElbSecurityGroups"
+        },
+        "Subnets": [{
+          "Ref": "PublicSubnet1"
+        }, {
+          "Ref": "PublicSubnet2"
+        }],
+        "Tags": [{
+          "Key": {
+            "Ref": "SecurityTagKey"
+          },
+          "Value": {
+            "Ref": "SecurityTagValue"
+          }
+        }, {
+          "Key": "Plane",
+          "Value": {
+            "Ref": "ServicePlane"
+          }
+        }, {
+          "Key": "Service",
+          "Value": {
+            "Ref": "ServiceName"
+          }
+        }, {
+          "Key": "CreatedBy",
+          "Value": {
+            "Ref": "StackCreator"
+          }
+        }]
+      }
+    },
+
+    "ServiceCloudWatch": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Alarm when UnHealthyHostCount is less than 1",
+        "AlarmName": {
+          "Ref": "LoadBalancerName"
+        },
+        "AlarmActions": [{
+          "Ref": "NotificationTopic"
+        }],
+        "ActionsEnabled": true,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [{
+          "Name": "LoadBalancerName",
+          "Value": {
+            "Fn::Join": ["", [{
+              "Ref": "ServiceName"
+            }, "-", {
+              "Ref": "Environment"
+            }]]
+          }
+        }],
+        "EvaluationPeriods": 1,
+        "InsufficientDataActions": [{
+          "Ref": "NotificationTopic"
+        }],
+        "MetricName": "UnHealthyHostCount",
+        "Namespace": "AWS/ELB",
+        "Period": 300,
+        "Statistic": "Average",
+        "Threshold": 0,
+        "Unit": "Count"
+      }
+    }
+    },
+    "Outputs": {
+      "ELB": {
+        "Value": {
+          "Fn::GetAtt": ["ServiceLoadBalancer", "DNSName"]
+        }
+      }
+    }
+}
