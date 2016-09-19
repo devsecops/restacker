@@ -32,5 +32,7 @@ This file is filled with commands that will be run after the instance is created
 
 For example, if you needed curl installed, you could enter the command 'sudo yum install curl'. This will cause curl to be installed after the instance is booted.
 
+![alt tag](docs/Restacker.png)
+
 ##Execution
 `restacker deploy -t <../Directory/To/Template> -n <Stack Name(Can be Anything)> -P <../Directory/To/parameters.yml> -l <AccountLabelInRestackerYml>`
