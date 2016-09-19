@@ -40,4 +40,4 @@ The relationships between these four files are represented in this diagram.
 ![alt tag](Restacker.png)
 
 ##Execution
-`restacker deploy -t <../Directory/To/Template> -n <Stack Name(Can be Anything)> -P <../Directory/To/parameters.yml> -l <AccountLabelInRestackerYml>`
+`restacker deploy -t <../Directory/To/Template> -n <Stack Name(Can be Anything)> -P <../Directory/To/parameters.yml> -l <Account Label in Restacker.yml ex. myapp1>`
