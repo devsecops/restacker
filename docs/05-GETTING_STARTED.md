@@ -32,6 +32,9 @@ This file is filled with commands that will be run after the instance is created
 
 For example, if you needed curl installed, you could enter the command 'sudo yum install curl'. This will cause curl to be installed after the instance is booted.
 
+####Diagram
+
+The relationships between these four files are represented in this diagram.
 ![alt tag](Restacker.png)
 
 ##Execution
