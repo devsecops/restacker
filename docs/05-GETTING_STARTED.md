@@ -35,6 +35,8 @@ For example, if you needed curl installed, you could enter the command 'sudo yum
 ####Diagram
 
 The relationships between these four files are represented in this diagram.
+
+
 ![alt tag](Restacker.png)
 
 ##Execution
