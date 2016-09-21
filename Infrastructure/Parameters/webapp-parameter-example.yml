@@ -1,0 +1,25 @@
+InstanceType: m3.medium
+EbsVolumeSize: 100
+KeyName: ssh-key-name
+ApplicationSecurityGroups: [sg-1a2b3c4d, sg-5e6f7g8h]
+ElbSecurityGroups: [sg-1a2b3c4d, sg-5e6f7g8h]
+AppSubnets: [subnet-1a2b3c4d, subnet-5e6f7g8h]
+PublicSubnets: [subnet-1a2b3c4d, subnet-5e6f7g8h]
+VpcId: vpc-a1b2c3d4
+InstanceProfileName: instance-role-name
+ServicePlane: plane-name
+Environment: blue
+ServiceName: MyServiceApp
+AmiId: ami-1ab2c3d4
+EnvironmentParameters: SERVICE_NAME=service_name,STACK_COLOR=blue
+ApplicationBundle: application.zip.gpg
+S3InstallersBucket: my-bucket
+UserDataScript: userdata.sh.gpg
+SecurityTagKey: security-tag-key-name
+SecurityTagValue: security-tag-value
+NotificationTopic: sns-topic-arn
+# ASGMin: 1
+# ASGDesired: 1
+# ASGMax: 1
+# InstancePort: 443
+# LoadBalancerPort: 443

@@ -88,19 +88,19 @@ class RestackerConfig
   end
 
   def self.find_config
+    create_config unless File.exists?(CONFIG_FILE)
+    YAML.load_file(CONFIG_FILE)
+  end
+
+  def self.create_config
     Dir.mkdir(CONFIG_DIR) unless Dir.exist?(CONFIG_DIR)
     begin
-      if File.exist?(CONFIG_FILE)
-        config = YAML.load_file(CONFIG_FILE)
-      else
-        File.open(CONFIG_FILE, 'w') { |f| f.write SAMPLE_FILE.to_yaml }
-      end
+      File.open(CONFIG_FILE, 'w') { |f| f.write SAMPLE_FILE.to_yaml }
     rescue Psych::SyntaxError
       raise "Improperly formatted YAML file: #{CONFIG_FILE}."
     rescue => e
       puts e.message
     end
-    config
   end
 
   def self.bucket
