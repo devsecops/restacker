@@ -1,4 +1,5 @@
 require_relative 'base_stacker'
+require_relative 'restacker_config'
 
 class AwsCli < BaseStacker
   def cmd(cmd, debug)
@@ -11,6 +12,7 @@ class AwsCli < BaseStacker
   end
 
   def console(options)
+
     session_json = {
     	sessionId: @creds.access_key_id,
     	sessionKey: @creds.secret_access_key,
@@ -31,5 +33,6 @@ class AwsCli < BaseStacker
     puts login_url if options[:debug]
 
     `open \"#{login_url}\"`
+
   end
 end
