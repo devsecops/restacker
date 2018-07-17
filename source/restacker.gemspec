@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'aws-sdk', '~> 2'
   s.add_runtime_dependency 'rainbow', '~> 2'
   s.homepage = 'https://github.com/devsecops/restacker'
-  s.license = 'Apache License Version 2.0'
+  s.license = 'Apache-2.0'
 end
