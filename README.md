@@ -9,6 +9,8 @@ Although not feature complete yet, you can begin using it to deploy or re-stack 
 ```
 git clone https://github.com/devsecops/restacker.git
 cd restacker/source
+gem install bundler
+bundle install
 gem build restacker.gemspec
 gem install restacker
 # if you're using rbenv, then: rbenv rehash
